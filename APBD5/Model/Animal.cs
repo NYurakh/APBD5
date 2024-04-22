@@ -1,3 +1,5 @@
+namespace APBD5.Model;
+
 public class Animal(string name, string description, string category, string area)
 {
     public int IdAnimal { get; set; }

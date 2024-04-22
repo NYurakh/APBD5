@@ -1,3 +1,4 @@
+using APBD5.Model;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -5,30 +6,21 @@ namespace APBD5.Controller
 {
     [ApiController]
     [Route("api/animals")]
-    public class AnimalsController : ControllerBase
+    public class AnimalsController(IAnimals animalRepo, ILogger<AnimalsController> logger) : ControllerBase
     {
-        private readonly IAnimals _animalRepo;
-        private readonly ILogger<AnimalsController> _logger;
-
-        public AnimalsController(IAnimals animalRepo, ILogger<AnimalsController> logger)
-        {
-            _animalRepo = animalRepo;
-            _logger = logger;
-        }
-
         // GET: /api/animals
         [HttpGet]
         public IActionResult GetAllAnimals(string orderBy = "Name")
         {
-            _logger.LogInformation("Fetching all animals.");
+            logger.LogInformation("Fetching all animals.");
 
             if (!IsValidOrderBy(orderBy))
             {
-                _logger.LogWarning($"Invalid orderBy value: {orderBy}. Defaulting to 'Name'.");
+                logger.LogWarning($"Invalid orderBy value: {orderBy}. Defaulting to 'Name'.");
                 orderBy = "Name"; // Default to sorting by Name if orderBy is invalid
             }
 
-            var animals = _animalRepo.FindAll(orderBy);
+            var animals = animalRepo.FindAll(orderBy);
             return Ok(animals);
         }
 
@@ -41,9 +33,9 @@ namespace APBD5.Controller
                 return BadRequest("Animal data is missing.");
             }
 
-            _logger.LogInformation($"Adding new animal: {animal}");
+            logger.LogInformation($"Adding new animal: {animal}");
 
-            _animalRepo.Add(animal);
+            animalRepo.Add(animal);
             return Ok("Animal successfully added.");
         }
 
@@ -56,9 +48,9 @@ namespace APBD5.Controller
                 return BadRequest("Invalid animal data or ID.");
             }
 
-            _logger.LogInformation($"Updating animal with ID: {idAnimal}");
+            logger.LogInformation($"Updating animal with ID: {idAnimal}");
 
-            var updated = _animalRepo.Update(idAnimal, animal);
+            var updated = animalRepo.Update(idAnimal, animal);
 
             if (updated)
             {
@@ -79,9 +71,9 @@ namespace APBD5.Controller
                 return BadRequest("Invalid animal ID.");
             }
 
-            _logger.LogInformation($"Deleting animal with ID: {idAnimal}");
+            logger.LogInformation($"Deleting animal with ID: {idAnimal}");
 
-            var deleted = _animalRepo.Delete(idAnimal);
+            var deleted = animalRepo.Delete(idAnimal);
 
             if (deleted)
             {

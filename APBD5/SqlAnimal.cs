@@ -1,5 +1,7 @@
+using APBD5.Model;
 using Microsoft.Data.SqlClient;
 
+namespace APBD5;
 
 public class SqlAnimal(IConfiguration configuration) : IAnimals
 {
@@ -13,31 +15,27 @@ public class SqlAnimal(IConfiguration configuration) : IAnimals
         var animals = new List<Animal>();
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
 
-        using (var connection = new SqlConnection(connectionString))
+        using var connection = new SqlConnection(connectionString);
+        connection.Open();
+
+        using var command = new SqlCommand();
+        command.Connection = connection;
+        command.CommandText = $"SELECT * FROM Animals ORDER BY {orderBy} ASC";
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
         {
-            connection.Open();
+            var idAnimal = Convert.ToInt32(reader["IdAnimal"]);
+            var name = reader["Name"].ToString() ?? "";
+            var description = reader["Description"].ToString() ?? "";
+            var category = reader["Category"].ToString() ?? "";
+            var area = reader["Area"].ToString() ?? "";
 
-            using (var command = new SqlCommand())
+            var animal = new Animal(name, description, category, area)
             {
-                command.Connection = connection;
-                command.CommandText = $"SELECT * FROM Animals ORDER BY {orderBy} ASC";
-
-                using var reader = command.ExecuteReader();
-                while (reader.Read())
-                {
-                    var idAnimal = Convert.ToInt32(reader["IdAnimal"]);
-                    var name = reader["Name"].ToString() ?? "";
-                    var description = reader["Description"].ToString() ?? "";
-                    var category = reader["Category"].ToString() ?? "";
-                    var area = reader["Area"].ToString() ?? "";
-
-                    var animal = new Animal(name, description, category, area)
-                    {
-                        IdAnimal = idAnimal
-                    };
-                    animals.Add(animal);
-                }
-            }
+                IdAnimal = idAnimal
+            };
+            animals.Add(animal);
         }
 
         return animals;
